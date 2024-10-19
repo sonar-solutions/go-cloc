@@ -1,0 +1,1 @@
+function foo(){console.log("Hello, World!")}var bar={foo:"hello",baz:"world"};function baz(){return"hello"}console.log("Hello, World!"),console.log("Hello, World!");
