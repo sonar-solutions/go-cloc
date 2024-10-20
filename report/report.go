@@ -96,7 +96,7 @@ func PrintCsv(records [][]string) {
 				outputString += ","
 			}
 		}
-		logger.Debug(outputString)
+		logger.Info(outputString)
 	}
 }
 

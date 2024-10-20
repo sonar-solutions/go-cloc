@@ -27,16 +27,23 @@ type CLIArgs struct {
 }
 
 func ParseArgsFromCLI() CLIArgs {
+	localScanFilePath := ""
+
+	if len(os.Args) < 1 {
+		logger.Info("Please provide specify a file or directory to scan")
+		os.Exit(-1)
+	} else {
+		localScanFilePath = os.Args[1]
+	}
 
 	// print out arguments
 	printLanguagesArg := flag.Bool("print-languages", false, "Prints out the supported languages, file suffixes, and comment configurations. Does not run the tool.")
 
 	// optional arguments
 	logLevelArg := flag.String("log-level", "INFO", "Log level - DEBUG, INFO, WARN, ERROR")
-	localScanFilePathArg := flag.String("local-file-path", "", "Path to your local file or directory that you wish to scan")
 	scanIdArg := flag.String("scan-id", "", "Identifier for the scan. This way you can reference the csv files later")
 	ignoreFilePathArg := flag.String("ignore-file", "", "Path to your ignore file. Defines directories and files to exclude when scanning. Please see the README.md for how to format your ignore configuration")
-	dumpCSVsArg := flag.Bool("dump-csvs", true, "When false, disables csv file dumps. DEBUG logging available to still see csv results in logs.")
+	dumpCSVsArg := flag.Bool("dump-csvs", false, "When true, dumps results to a csv file, otherwise gives results in logs")
 	resultsDirectoryPathArg := flag.String("results-directory-path", "", "Path to a new directory for storing the results. Default the tool will create one based on the start time")
 
 	// parse the CLI arguments
@@ -45,7 +52,6 @@ func ParseArgsFromCLI() CLIArgs {
 	// dereference all CLI args to make it easier to use
 	printLanguages := *printLanguagesArg
 	logLevel := *logLevelArg
-	localScanFilePath := *localScanFilePathArg
 	ignoreFilePath := *ignoreFilePathArg
 	dumpCSVs := *dumpCSVsArg
 	resultsDirectoryPath := *resultsDirectoryPathArg
@@ -69,12 +75,8 @@ func ParseArgsFromCLI() CLIArgs {
 
 	// validate mandatory arguments
 	logger.Debug("Validating mandatory arguments")
-	if localScanFilePath == "" {
-		logger.Error("Requires : --local-file-path")
-		os.Exit(-1)
-	}
-	if scanId == "" {
-		logger.Error("Requires : --scan-id")
+	if dumpCSVs && scanId == "" {
+		logger.Error("Requires : --scan-id for --dump-csvs")
 		os.Exit(-1)
 	}
 

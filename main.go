@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// scan LOC for the directory
-	logger.Info("Scanning ", args.ScanId, "...")
+	logger.Info("Scanning ", args.LocalScanFilePath, "...")
 	filePaths := scanner.WalkDirectory(args.LocalScanFilePath, args.IgnorePatterns)
 	fileScanResultsArr := []scanner.FileScanResults{}
 	for _, filePath := range filePaths {
@@ -59,8 +59,6 @@ func main() {
 	fileScanResultsArr = report.SortFileScanResults(fileScanResultsArr)
 	repoTotalResult := report.CalculateTotalLineOfCode(fileScanResultsArr)
 
-	logger.Info("Total LOC for is ", repoTotalResult.CodeLineCount)
-
 	// convert results into records for CSV or command line output
 	records := report.ConvertFileResultsIntoRecords(fileScanResultsArr, repoTotalResult)
 
@@ -72,11 +70,11 @@ func main() {
 		logger.Info("Done! Results for ", args.ScanId, " can be found ", outputCsvFilePath)
 	} else {
 		// print results to the command line
-		logger.Info("Results by file for ", args.ScanId, ":")
+		logger.Info("Results by file for ", args.LocalScanFilePath, ":")
 		report.PrintCsv(records)
 	}
 
-	logger.Info("Total LOC for ", args.ScanId, " is ", repoTotalResult.CodeLineCount)
+	logger.Info("Total LOC for ", args.LocalScanFilePath, " is ", repoTotalResult.CodeLineCount)
 
 	// Print the total LOC to standard output to make it easy for external tools to parse
 	fmt.Println(repoTotalResult.CodeLineCount)
