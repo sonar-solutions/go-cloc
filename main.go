@@ -10,27 +10,6 @@ import (
 	"path/filepath"
 )
 
-// pseduocode
-// discover repos, should return a list of repos
-
-// for each repo
-// // clone repo
-// // perform a scan
-// // dump a csv report
-
-// combine csv reports
-// report on any failed repos
-
-// contains checks if a slice contains a specific string
-func contains(slice []string, item string) bool {
-	for _, str := range slice {
-		if str == item {
-			return true
-		}
-	}
-	return false
-}
-
 func main() {
 	// parse CLI arguments and store them in a struct
 	args := utilities.ParseArgsFromCLI()

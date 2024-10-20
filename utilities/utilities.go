@@ -27,23 +27,17 @@ type CLIArgs struct {
 }
 
 func ParseArgsFromCLI() CLIArgs {
-	localScanFilePath := ""
-
-	if len(os.Args) < 1 {
-		logger.Info("Please provide specify a file or directory to scan")
-		os.Exit(-1)
-	} else {
-		localScanFilePath = os.Args[1]
-	}
-
 	// print out arguments
 	printLanguagesArg := flag.Bool("print-languages", false, "Prints out the supported languages, file suffixes, and comment configurations. Does not run the tool.")
 
+	// mandatory arguments
+	localScanFilePathArg := flag.String("path", "", "Path to your local file or directory that you wish to scan")
+
 	// optional arguments
 	logLevelArg := flag.String("log-level", "INFO", "Log level - DEBUG, INFO, WARN, ERROR")
-	scanIdArg := flag.String("scan-id", "", "Identifier for the scan. This way you can reference the csv files later")
+	scanIdArg := flag.String("scan-id", "", "Identifier for the scan. For reference in a csv file later")
 	ignoreFilePathArg := flag.String("ignore-file", "", "Path to your ignore file. Defines directories and files to exclude when scanning. Please see the README.md for how to format your ignore configuration")
-	dumpCSVsArg := flag.Bool("dump-csvs", false, "When true, dumps results to a csv file, otherwise gives results in logs")
+	dumpCSVsArg := flag.Bool("dump-csv", false, "When true, dumps results to a csv file, otherwise gives results in logs")
 	resultsDirectoryPathArg := flag.String("results-directory-path", "", "Path to a new directory for storing the results. Default the tool will create one based on the start time")
 
 	// parse the CLI arguments
@@ -52,6 +46,7 @@ func ParseArgsFromCLI() CLIArgs {
 	// dereference all CLI args to make it easier to use
 	printLanguages := *printLanguagesArg
 	logLevel := *logLevelArg
+	localScanFilePath := *localScanFilePathArg
 	ignoreFilePath := *ignoreFilePathArg
 	dumpCSVs := *dumpCSVsArg
 	resultsDirectoryPath := *resultsDirectoryPathArg
@@ -73,8 +68,13 @@ func ParseArgsFromCLI() CLIArgs {
 		os.Exit(0)
 	}
 
-	// validate mandatory arguments
 	logger.Debug("Validating mandatory arguments")
+
+	// validate mandatory arguments
+	if localScanFilePath == "" {
+		logger.Error("Requires : --path")
+		os.Exit(-1)
+	}
 	if dumpCSVs && scanId == "" {
 		logger.Error("Requires : --scan-id for --dump-csvs")
 		os.Exit(-1)
@@ -99,8 +99,8 @@ func ParseArgsFromCLI() CLIArgs {
 	// set results directory if dumpCSVs is true
 	if resultsDirectoryPath == "" && dumpCSVs {
 		resultsDirectoryPath = time.Now().Format("20060102_150405") // Format: YYYYMMDD_HHMMSS
+		logger.Debug("Results Directory Path: ", resultsDirectoryPath)
 	}
-	logger.Debug("Results Directory Path: ", resultsDirectoryPath)
 
 	args := CLIArgs{
 		LogLevel:             logLevel,

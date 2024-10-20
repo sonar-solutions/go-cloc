@@ -238,7 +238,7 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 		for _, pattern := range patterns {
 			if pattern.Match([]byte(path)) {
 				if info.IsDir() {
-					logger.Debug("SKipping DIR - " + info.Name())
+					logger.Debug("Skipping dir - " + info.Name())
 					return filepath.SkipDir
 				}
 				return nil
