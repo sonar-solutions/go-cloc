@@ -1,15 +1,11 @@
 name: CI
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - '**'
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version number'
-        required: true
-        default: '1.0.0'
 
 jobs:
   build-and-test-unit-tests:
@@ -25,7 +21,4 @@ jobs:
 
       - name: Run All Unit Tests
         run: go test ./...
-      
-      - name: Perform All Builds
-        run: ./build.sh
       
