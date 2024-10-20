@@ -6,21 +6,13 @@ on:
       - '**'
   workflow_dispatch:
     inputs:
-      job:
-        description: 'Job to run'
+      version:
+        description: 'Version number'
         required: true
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - unit-tests
-          - windows
-          - linux
-          - macos
+        default: '1.0.0'
 
 jobs:
   build-and-test-unit-tests:
-    if: github.event.inputs.job == 'all' || github.event.inputs.job == 'unit-tests'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -30,107 +22,10 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: '1.23.1'
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
 
       - name: Run All Unit Tests
         run: go test ./...
-
-  build-and-test-windows:
-    if: github.event.inputs.job == 'all' || github.event.inputs.job == 'windows'
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.23.1'
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Build Go project
-        run: go build -o go-cloc.exe main.go
-
-      - name: Run integration tests
-        run: python integration-tests.py --go_cloc_path=go-cloc.exe
-        env:
-          GO_CLOC_GITHUB_ORGANIZATION: ${{ secrets.GO_CLOC_GITHUB_ORGANIZATION }}
-          GO_CLOC_GITHUB_ACCESS_TOKEN: ${{ secrets.GO_CLOC_GITHUB_ACCESS_TOKEN }}
-          GO_CLOC_AZURE_DEVOPS_ORGANIZATION: ${{ secrets.GO_CLOC_AZURE_DEVOPS_ORGANIZATION }}
-          GO_CLOC_AZURE_DEVOPS_ACCESS_TOKEN: ${{ secrets.GO_CLOC_AZURE_DEVOPS_ACCESS_TOKEN }}
-          GO_CLOC_GITLAB_ORGANIZATION: ${{ secrets.GO_CLOC_GITLAB_ORGANIZATION }}
-          GO_CLOC_GITLAB_ACCESS_TOKEN: ${{ secrets.GO_CLOC_GITLAB_ACCESS_TOKEN }}
-          GO_CLOC_BITBUCKET_ORGANIZATION: ${{ secrets.GO_CLOC_BITBUCKET_ORGANIZATION }}
-          GO_CLOC_BITBUCKET_ACCESS_TOKEN: ${{ secrets.GO_CLOC_BITBUCKET_ACCESS_TOKEN }}
-
-  build-and-test-linux:
-    if: github.event.inputs.job == 'all' || github.event.inputs.job == 'linux'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.23.1'
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Build Go project
-        run: go build -o go-cloc ./main.go
-
-      - name: Run integration tests
-        run: python3 integration-tests.py --go_cloc_path=./go-cloc
-        env:
-          GO_CLOC_GITHUB_ORGANIZATION: ${{ secrets.GO_CLOC_GITHUB_ORGANIZATION }}
-          GO_CLOC_GITHUB_ACCESS_TOKEN: ${{ secrets.GO_CLOC_GITHUB_ACCESS_TOKEN }}
-          GO_CLOC_AZURE_DEVOPS_ORGANIZATION: ${{ secrets.GO_CLOC_AZURE_DEVOPS_ORGANIZATION }}
-          GO_CLOC_AZURE_DEVOPS_ACCESS_TOKEN: ${{ secrets.GO_CLOC_AZURE_DEVOPS_ACCESS_TOKEN }}
-          GO_CLOC_GITLAB_ORGANIZATION: ${{ secrets.GO_CLOC_GITLAB_ORGANIZATION }}
-          GO_CLOC_GITLAB_ACCESS_TOKEN: ${{ secrets.GO_CLOC_GITLAB_ACCESS_TOKEN }}
-          GO_CLOC_BITBUCKET_ORGANIZATION: ${{ secrets.GO_CLOC_BITBUCKET_ORGANIZATION }}
-          GO_CLOC_BITBUCKET_ACCESS_TOKEN: ${{ secrets.GO_CLOC_BITBUCKET_ACCESS_TOKEN }}
-
-  build-and-test-macos:
-    if: github.event.inputs.job == 'all' || github.event.inputs.job == 'macos'
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.23.1'
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Build Go project
-        run: go build -o go-cloc ./main.go
-
-      - name: Run integration tests
-        run: python3 integration-tests.py --go_cloc_path=./go-cloc
-        env:
-          GO_CLOC_GITHUB_ORGANIZATION: ${{ secrets.GO_CLOC_GITHUB_ORGANIZATION }}
-          GO_CLOC_GITHUB_ACCESS_TOKEN: ${{ secrets.GO_CLOC_GITHUB_ACCESS_TOKEN }}
-          GO_CLOC_AZURE_DEVOPS_ORGANIZATION: ${{ secrets.GO_CLOC_AZURE_DEVOPS_ORGANIZATION }}
-          GO_CLOC_AZURE_DEVOPS_ACCESS_TOKEN: ${{ secrets.GO_CLOC_AZURE_DEVOPS_ACCESS_TOKEN }}
-          GO_CLOC_GITLAB_ORGANIZATION: ${{ secrets.GO_CLOC_GITLAB_ORGANIZATION }}
-          GO_CLOC_GITLAB_ACCESS_TOKEN: ${{ secrets.GO_CLOC_GITLAB_ACCESS_TOKEN }}
-          GO_CLOC_BITBUCKET_ORGANIZATION: ${{ secrets.GO_CLOC_BITBUCKET_ORGANIZATION }}
-          GO_CLOC_BITBUCKET_ACCESS_TOKEN: ${{ secrets.GO_CLOC_BITBUCKET_ACCESS_TOKEN }}
+      
+      - name: Perform All Builds
+        run: ./build.sh
+      
