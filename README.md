@@ -49,6 +49,8 @@ This will output the total Lines of Code (LOC) count for the entire organization
        Path to your ignore file. Defines directories and files to exclude when scanning. Please see the README.md for how to format your ignore configuration
 -  `--log-level`
        Log level - DEBUG, INFO, WARN, ERROR (default "INFO")
+-  `--override-languages-path`
+       Path to languages configuration to override the default configuration
 -  `--print-languages`
        Prints out the supported languages, file suffixes, and comment configurations. Does not run the tool.
 -  `--results-directory-path`
@@ -78,7 +80,32 @@ The ignore file is a simple text file used to exclude certain directories and fi
 $ ./go-cloc --path src/main --ignore-file ignore.txt
 ```
 
+## Extensibility
+If successful, the tool will print the total lines of code (LOC) count on its own line. See below for an example. If it fails, it will return a non-zero exit code for easy integration with scripts or other 3rd party tools.
+```sh
+# Below shows the final LOC outputted on its own line for ease of use
+2024/10/20 01:54:22 [INFO] total,200,0,1450
+2024/09/29 17:37:05 [INFO] Total LOC for  src/main  is  1450
+# Example final line below
+1450
+```
+## Performance Benchmarks
+
+```sh
+# Scanning 1 Billion Lines of Code
+
+# go-cloc finished in < 5s
+time ./go-cloc --path one-billion-loc-test
+3.9s user 0.72s system 93% cpu 4.976 total
+
+# cloc finished in ~2.5 minutes
+time cloc one-billion-loc-test
+128.48s user 4.22s system 96% cpu 2:17.72 total
+```
+
 ## Language Support
+Below is the default language configuration.
+
 ```json
 {
   "Abap": {
@@ -276,27 +303,5 @@ $ ./go-cloc --path src/main --ignore-file ignore.txt
 }
 
 ```
-
-## Extensibility
-If successful, the tool will print the total lines of code (LOC) count on its own line. See below for an example. If it fails, it will return a non-zero exit code for easy integration with scripts or other 3rd party tools.
-```sh
-# Below shows the final LOC outputted on its own line for ease of use
-2024/10/20 01:54:22 [INFO] total,200,0,1450
-2024/09/29 17:37:05 [INFO] Total LOC for  src/main  is  1450
-# Example final line below
-1450
-```
-
-## Performance Benchmarks
-
-```sh
-# Scanning 1 Billion Lines of Code
-
-# go-cloc finished in < 5s
-time ./go-cloc --path one-billion-loc-test
-3.9s user 0.72s system 93% cpu 4.976 total
-
-# cloc finished in ~2.5 minutes
-time cloc one-billion-loc-test
-128.48s user 4.22s system 96% cpu 2:17.72 total
-```
+### Customization
+To customize this configuration, copy the above JSON, customize it to your needs, and pass in the file path as `--override-languages-path`. See [options](#options) for more details.
