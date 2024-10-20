@@ -18,12 +18,13 @@ const (
 )
 
 type CLIArgs struct {
-	LogLevel             string
-	LocalScanFilePath    string
-	IgnorePatterns       []string
-	DumpCSVs             bool
-	ResultsDirectoryPath string
-	ScanId               string
+	LogLevel                        string
+	LocalScanFilePath               string
+	IgnorePatterns                  []string
+	DumpCSVs                        bool
+	ResultsDirectoryPath            string
+	ScanId                          string
+	OverrideLanguagesConfigFilePath string
 }
 
 func ParseArgsFromCLI() CLIArgs {
@@ -39,6 +40,7 @@ func ParseArgsFromCLI() CLIArgs {
 	ignoreFilePathArg := flag.String("ignore-file", "", "Path to your ignore file. Defines directories and files to exclude when scanning. Please see the README.md for how to format your ignore configuration")
 	dumpCSVsArg := flag.Bool("dump-csv", false, "When true, dumps results to a csv file, otherwise gives results in logs")
 	resultsDirectoryPathArg := flag.String("results-directory-path", "", "Path to a new directory for storing the results. Default the tool will create one based on the start time")
+	overrideLanguageConfigFilePathArg := flag.String("override-languages-path", "", "Path to languages configuration to override the default configuration.")
 
 	// parse the CLI arguments
 	flag.Parse()
@@ -51,6 +53,7 @@ func ParseArgsFromCLI() CLIArgs {
 	dumpCSVs := *dumpCSVsArg
 	resultsDirectoryPath := *resultsDirectoryPathArg
 	scanId := *scanIdArg
+	overrideLanguageConfigFilePath := *overrideLanguageConfigFilePathArg
 
 	// set log level
 	logger.SetLogLevel(logger.ConvertStringToLogLevel(logLevel))
@@ -102,13 +105,20 @@ func ParseArgsFromCLI() CLIArgs {
 		logger.Debug("Results Directory Path: ", resultsDirectoryPath)
 	}
 
+	// override languages config
+	if overrideLanguageConfigFilePath != "" {
+		logger.Debug("Overriding default languages with ", overrideLanguageConfigFilePath)
+		scanner.LoadLanguages(overrideLanguageConfigFilePath)
+	}
+
 	args := CLIArgs{
-		LogLevel:             logLevel,
-		LocalScanFilePath:    localScanFilePath,
-		IgnorePatterns:       ignorePatterns,
-		DumpCSVs:             dumpCSVs,
-		ResultsDirectoryPath: resultsDirectoryPath,
-		ScanId:               scanId,
+		LogLevel:                        logLevel,
+		LocalScanFilePath:               localScanFilePath,
+		IgnorePatterns:                  ignorePatterns,
+		DumpCSVs:                        dumpCSVs,
+		ResultsDirectoryPath:            resultsDirectoryPath,
+		ScanId:                          scanId,
+		OverrideLanguagesConfigFilePath: overrideLanguageConfigFilePath,
 	}
 
 	return args

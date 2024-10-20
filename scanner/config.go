@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-cloc/logger"
+	"io"
+	"os"
 )
 
 type LanguageInfo struct {
-	LineComments      []string
-	MultiLineComments [][]string
-	Extensions        []string
+	LineComments      []string   `json:"LineComments"`
+	MultiLineComments [][]string `json:"MultiLineComments"`
+	Extensions        []string   `json:"Extensions"`
 }
 
 var Languages = map[string]LanguageInfo{
@@ -229,4 +231,23 @@ func PrintLanguages() {
 
 	// Print the JSON string
 	fmt.Println(buf.String())
+}
+
+// LoadLanguages reads the JSON file and overrides the default Languages map
+func LoadLanguages(fileName string) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		logger.LogStackTraceAndExit(err)
+	}
+	defer file.Close()
+
+	byteValue, err := io.ReadAll(file)
+	if err != nil {
+		logger.LogStackTraceAndExit(err)
+	}
+
+	err = json.Unmarshal(byteValue, &Languages)
+	if err != nil {
+		logger.LogStackTraceAndExit(err)
+	}
 }

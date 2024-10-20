@@ -144,3 +144,14 @@ func Test_scanner_ReadIgnoreFile(t *testing.T) {
 	assert.Equal(t, "*.js", result[0])
 	assert.Equal(t, "misc/", result[1])
 }
+
+func Test_scanner_LoadLanguages(t *testing.T) {
+
+	LoadLanguages("test-files/override-config.json")
+	// testing custom extension
+	language, _, found := LookupByExtension(".yaml2")
+
+	// Assert
+	assert.Equal(t, "YAML", language)
+	assert.Equal(t, true, found)
+}

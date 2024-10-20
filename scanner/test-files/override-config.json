@@ -1,0 +1,7 @@
+{
+    "YAML": {
+      "LineComments": ["#"],
+      "MultiLineComments": [],
+      "Extensions": [".yaml", ".yml",".yaml2"]
+    }
+  }
