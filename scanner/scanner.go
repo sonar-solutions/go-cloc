@@ -55,6 +55,14 @@ func AnalyzeLine(line string, languageInfo LanguageInfo, isInBlockComment bool) 
 }
 
 func ScanFile(filePath string) FileScanResults {
+	result := FileScanResults{
+		FilePath:          filePath,
+		BlankLineCount:    0,
+		CodeLineCount:     0,
+		CommentsLineCount: 0,
+		TotalLines:        0,
+	}
+
 	commentsLineCount := 0
 	codeLineCount := 0
 	blankLineCount := 0
@@ -62,7 +70,10 @@ func ScanFile(filePath string) FileScanResults {
 
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Error("File ", filePath, " failed to scan. Counting as 0")
+		logger.Error(err)
+		logger.Error(logger.GetStackTrace())
+		return result
 	}
 	defer f.Close()
 
@@ -74,12 +85,7 @@ func ScanFile(filePath string) FileScanResults {
 	// TODO Dockerfile does not always have an extension, but we will count it
 	if !found {
 		logger.Debug("Skipping file: ", fileName, " suffix '", suffix, "' is not supported.")
-		return FileScanResults{
-			BlankLineCount:    0,
-			CodeLineCount:     0,
-			CommentsLineCount: 0,
-			TotalLines:        0,
-		}
+		return result
 	}
 
 	// Scan file
@@ -108,13 +114,12 @@ func ScanFile(filePath string) FileScanResults {
 			if err == io.EOF {
 				break
 			}
-			log.Fatalln(err)
+			logger.LogStackTraceAndExit(err)
 		}
 		debugLineNum++
 	}
 
 	// return the totals
-	result := FileScanResults{}
 	result.TotalLines = totalLines
 	result.CodeLineCount = codeLineCount
 	result.BlankLineCount = blankLineCount

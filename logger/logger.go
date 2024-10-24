@@ -70,15 +70,19 @@ func Error(v ...interface{}) {
 	logMessage(ERROR, "[ERROR]", v...)
 }
 
+func GetStackTrace() string {
+	// log stack trace
+	buf := make([]byte, 1024)
+	runtime.Stack(buf, false)
+	return string(buf)
+}
+
 func LogStackTraceAndExit(err interface{}) {
 	// log erro
 	if err != nil {
 		Error(err)
 	}
-	// log stack trace
-	buf := make([]byte, 1024)
-	runtime.Stack(buf, false)
-	Error("Stack trace:\n", string(buf))
+	Error("Stack trace:\n", GetStackTrace())
 	os.Exit(-1)
 }
 
