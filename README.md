@@ -14,11 +14,11 @@ Please download the appropriate [artifact](https://github.com/cole-gannaway/go-c
 Simply run the below command to calculate the Lines of Code (LOC) for the file or directory.
 ```sh
 # Single file
-./go-cloc --path test.js
+./go-cloc test.js
 # Directory or Folder
-./go-cloc --path src/main
+./go-cloc src/main
 # Output results to a CSV file
-./go-cloc --path folder --scan-id folder --dump-csv=true
+./go-cloc folder --scan-id folder --dump-csv=true
 ```
 This will output the total Lines of Code (LOC) count for the entire organization. See example below.
 ```
@@ -77,7 +77,7 @@ The ignore file is a simple text file used to exclude certain directories and fi
 * Combined examples
 ```sh
 # Local scan with ignoring certain files or directories
-$ ./go-cloc --path src/main --ignore-file ignore.txt
+$ ./go-cloc src/main --ignore-file ignore.txt
 ```
 
 ## Extensibility
@@ -95,7 +95,7 @@ If successful, the tool will print the total lines of code (LOC) count on its ow
 # Scanning 1 Billion Lines of Code
 
 # go-cloc finished in < 5s
-time ./go-cloc --path one-billion-loc-test
+time ./go-cloc one-billion-loc-test
 3.9s user 0.72s system 93% cpu 4.976 total
 
 # cloc finished in ~2.5 minutes

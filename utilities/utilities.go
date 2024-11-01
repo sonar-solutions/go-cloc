@@ -31,9 +31,6 @@ func ParseArgsFromCLI() CLIArgs {
 	// print out arguments
 	printLanguagesArg := flag.Bool("print-languages", false, "Prints out the supported languages, file suffixes, and comment configurations. Does not run the tool.")
 
-	// mandatory arguments
-	localScanFilePathArg := flag.String("path", "", "Path to your local file or directory that you wish to scan")
-
 	// optional arguments
 	logLevelArg := flag.String("log-level", "INFO", "Log level - DEBUG, INFO, WARN, ERROR")
 	scanIdArg := flag.String("scan-id", "", "Identifier for the scan. For reference in a csv file later")
@@ -47,8 +44,30 @@ func ParseArgsFromCLI() CLIArgs {
 
 	// dereference all CLI args to make it easier to use
 	printLanguages := *printLanguagesArg
+
+	// print out languages
+	if printLanguages {
+		scanner.PrintLanguages()
+		os.Exit(0)
+	}
+
+	// Collect the remaining arguments
+	cliArgs := flag.Args()
+
+	// mandatory arguments
+	if len(cliArgs) < 1 {
+		logger.Error("Requires a path to the file or directory to scan as the first command line argument, ex: 'go-cloc file1.js'")
+		os.Exit(-1)
+	}
+
+	// Handle the first non-flag argument if it exists
+	localScanFilePath := cliArgs[0]
+
+	// Parse any remaining flags after the first non-flag argument
+	flag.CommandLine.Parse(cliArgs[1:])
+
+	// dereference all CLI args to make it easier to use
 	logLevel := *logLevelArg
-	localScanFilePath := *localScanFilePathArg
 	ignoreFilePath := *ignoreFilePathArg
 	dumpCSVs := *dumpCSVsArg
 	resultsDirectoryPath := *resultsDirectoryPathArg
@@ -65,19 +84,9 @@ func ParseArgsFromCLI() CLIArgs {
 	// print out arguments
 	logger.Debug("dump-csvs: ", dumpCSVs)
 
-	// print out languages
-	if printLanguages {
-		scanner.PrintLanguages()
-		os.Exit(0)
-	}
-
 	logger.Debug("Validating mandatory arguments")
 
 	// validate mandatory arguments
-	if localScanFilePath == "" {
-		logger.Error("Requires : --path")
-		os.Exit(-1)
-	}
 	if dumpCSVs && scanId == "" {
 		logger.Error("Requires : --scan-id for --dump-csvs")
 		os.Exit(-1)
