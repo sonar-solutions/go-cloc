@@ -5,6 +5,8 @@ import (
 	"go-cloc/logger"
 	"go-cloc/scanner"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -25,6 +27,15 @@ type CLIArgs struct {
 	ResultsDirectoryPath            string
 	ScanId                          string
 	OverrideLanguagesConfigFilePath string
+}
+
+func CleanLocalFilePath(targetPath string) string {
+	logger.Debug("CleanLocalFilePath targetPath before: '", targetPath, "'")
+	targetPath = filepath.Clean(targetPath)
+	// On windows this may be needed if spaces are in the file path
+	targetPath = strings.TrimSuffix(targetPath, "\"")
+	logger.Debug("CleanLocalFilePath targetPath after: '", targetPath, "'")
+	return targetPath
 }
 
 func ParseArgsFromCLI() CLIArgs {
@@ -54,14 +65,11 @@ func ParseArgsFromCLI() CLIArgs {
 	// Collect the remaining arguments
 	cliArgs := flag.Args()
 
-	// mandatory arguments
+	// Ensure at least one argument
 	if len(cliArgs) < 1 {
 		logger.Error("Requires a path to the file or directory to scan as the first command line argument, ex: 'go-cloc file1.js'")
 		os.Exit(-1)
 	}
-
-	// Handle the first non-flag argument if it exists
-	localScanFilePath := cliArgs[0]
 
 	// Parse any remaining flags after the first non-flag argument
 	flag.CommandLine.Parse(cliArgs[1:])
@@ -91,6 +99,9 @@ func ParseArgsFromCLI() CLIArgs {
 		logger.Error("Requires : --scan-id for --dump-csvs")
 		os.Exit(-1)
 	}
+
+	// Set file path to scan
+	localScanFilePath := CleanLocalFilePath(cliArgs[0])
 
 	// validate optional arguments
 
