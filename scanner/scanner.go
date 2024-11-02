@@ -78,14 +78,27 @@ func ScanFile(filePath string) FileScanResults {
 	defer f.Close()
 
 	// Get metadata about file
-	fileName := f.Name()
+	fileName := filepath.Base(f.Name())
 	suffix := ParseFileSuffix(fileName)
-	_, languageInfo, found := LookupByExtension(suffix)
-	// If not supported return 0s, TODO should probably throw an error or report on it
-	// TODO Dockerfile does not always have an extension, but we will count it
-	if !found {
-		logger.Debug("Skipping file: ", fileName, " suffix '", suffix, "' is not supported.")
-		return result
+	var languageInfo LanguageInfo
+
+	if suffix == "" {
+		foundLanguageInfo := false
+		_, languageInfo, foundLanguageInfo = LookupByFileName(fileName)
+		if !foundLanguageInfo {
+			logger.Debug("Skipping file: ", fileName, " suffix '", suffix, "'. No suffix and file name not supported in config.")
+			return result
+		}
+
+	} else {
+		foundLanguageInfo := false
+		_, languageInfo, foundLanguageInfo = LookupByExtension(suffix)
+		// If not supported return 0s, TODO should probably throw an error or report on it
+		// TODO Dockerfile does not always have an extension, but we will count it
+		if !foundLanguageInfo {
+			logger.Debug("Skipping file: ", fileName, " suffix '", suffix, "' is not supported.")
+			return result
+		}
 	}
 
 	// Scan file
@@ -217,10 +230,11 @@ func ReadIgnoreFile(path string) []string {
 
 func ParseFileSuffix(fileName string) string {
 	splitArr := strings.Split(fileName, ".")
-	// if file does not have a suffix
-	if len(splitArr) != 0 {
+	if len(splitArr) > 1 {
 		suffix := splitArr[len(splitArr)-1]
 		return "." + strings.ToLower(suffix)
+	} else {
+		logger.Debug("File : ", fileName, " does not have a suffix")
 	}
 	return ""
 }
@@ -234,7 +248,7 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 		logger.Error("Error getting current directory:", err)
 	}
 
-	logger.Debug("Target directory is ", originalDir)
+	logger.Debug("Target directory is ", targetPath)
 	var fileNames []string
 	err = filepath.WalkDir(targetPath, func(path string, info os.DirEntry, err error) error {
 		if err != nil {
@@ -253,7 +267,13 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 		}
 		if !info.IsDir() {
 			suffix := ParseFileSuffix(info.Name())
-			_, _, found := LookupByExtension(suffix)
+			var found bool
+			logger.Info(info.Name())
+			if suffix == "" {
+				_, _, found = LookupByFileName(filepath.Base(info.Name()))
+			} else {
+				_, _, found = LookupByExtension(suffix)
+			}
 
 			if found {
 				fileNames = append(fileNames, path)

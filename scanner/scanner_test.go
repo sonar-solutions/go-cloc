@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"fmt"
+	"go-cloc/logger"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -108,6 +109,21 @@ func Test_scanner_ScanFile_minified_line_txt(t *testing.T) {
 	// Assert
 	assert.Equal(t, 1, result.CodeLineCount)
 }
+
+func Test_scanner_ScanFile_dockerfile(t *testing.T) {
+	result := ScanFile("test-files/docker/by-suffix/test.Dockerfile")
+
+	// Assert
+	assert.Equal(t, 2, result.CodeLineCount)
+}
+
+func Test_scanner_ScanFile_dockerfile_no_suffix(t *testing.T) {
+	logger.SetLogLevel(logger.DEBUG)
+	result := ScanFile("test-files/docker/by-file-name/Dockerfile")
+
+	// Assert
+	assert.Equal(t, 2, result.CodeLineCount)
+}
 func Test_scanner_ParseFileSuffix(t *testing.T) {
 	suffix := ParseFileSuffix("main.js")
 
@@ -133,6 +149,15 @@ func Test_scanner_WalkDirectory_with_ignores(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, 1, len(result))
+}
+
+func Test_scanner_WalkDirectory_containing_with_files_without_suffix(t *testing.T) {
+	ignorePatterns := []string{}
+
+	result := WalkDirectory("test-files/docker", ignorePatterns)
+
+	// Assert
+	assert.Equal(t, 2, len(result))
 }
 
 func Test_scanner_ReadIgnoreFile(t *testing.T) {
