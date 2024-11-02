@@ -51,15 +51,15 @@ func CalculateTotalLineOfCode(fileScanResultsArr []scanner.FileScanResults) scan
 func ConvertFileResultsIntoRecords(fileScanResultsArr []scanner.FileScanResults, totalResults scanner.FileScanResults) [][]string {
 	// Create CSV information
 	records := [][]string{
-		{"filePath", "blank", "comment", "code"},
+		{"filePath", "languageName", "blank", "comment", "code"},
 	}
 
 	for _, results := range fileScanResultsArr {
-		row := []string{results.FilePath, strconv.Itoa(results.BlankLineCount), strconv.Itoa(results.CommentsLineCount), strconv.Itoa(results.CodeLineCount)}
+		row := []string{results.FilePath, results.LanguageName, strconv.Itoa(results.BlankLineCount), strconv.Itoa(results.CommentsLineCount), strconv.Itoa(results.CodeLineCount)}
 		records = append(records, row)
 	}
 	// Append Total Row
-	totalRow := []string{"total", strconv.Itoa(totalResults.BlankLineCount), strconv.Itoa(totalResults.CommentsLineCount), strconv.Itoa(totalResults.CodeLineCount)}
+	totalRow := []string{"total", "", strconv.Itoa(totalResults.BlankLineCount), strconv.Itoa(totalResults.CommentsLineCount), strconv.Itoa(totalResults.CodeLineCount)}
 	records = append(records, totalRow)
 	return records
 }
@@ -98,22 +98,4 @@ func PrintCsv(records [][]string) {
 		}
 		logger.Info(outputString)
 	}
-}
-
-func ConvertRepoTotalsIntoRecords(repoTotals []RepoTotal) [][]string {
-	// Create CSV information
-	records := [][]string{
-		{"repository", "lineOfCodeCount"},
-	}
-	sum := 0
-	for _, repoResult := range repoTotals {
-		row := []string{repoResult.RepositoryId, strconv.Itoa(repoResult.CodeLineCount)}
-		records = append(records, row)
-		// keep running total
-		sum += repoResult.CodeLineCount
-	}
-	// Create total row
-	totalRow := []string{"total", strconv.Itoa(sum)}
-	records = append(records, totalRow)
-	return records
 }

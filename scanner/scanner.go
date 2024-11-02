@@ -13,6 +13,7 @@ import (
 
 type FileScanResults struct {
 	FilePath          string
+	LanguageName      string
 	TotalLines        int
 	CodeLineCount     int
 	BlankLineCount    int
@@ -57,6 +58,7 @@ func AnalyzeLine(line string, languageInfo LanguageInfo, isInBlockComment bool) 
 func ScanFile(filePath string) FileScanResults {
 	result := FileScanResults{
 		FilePath:          filePath,
+		LanguageName:      "",
 		BlankLineCount:    0,
 		CodeLineCount:     0,
 		CommentsLineCount: 0,
@@ -81,10 +83,11 @@ func ScanFile(filePath string) FileScanResults {
 	fileName := filepath.Base(f.Name())
 	suffix := ParseFileSuffix(fileName)
 	var languageInfo LanguageInfo
+	var langName string
 
 	if suffix == "" {
 		foundLanguageInfo := false
-		_, languageInfo, foundLanguageInfo = LookupByFileName(fileName)
+		langName, languageInfo, foundLanguageInfo = LookupByFileName(fileName)
 		if !foundLanguageInfo {
 			logger.Debug("Skipping file: ", fileName, " suffix '", suffix, "'. No suffix and file name not supported in config.")
 			return result
@@ -92,7 +95,7 @@ func ScanFile(filePath string) FileScanResults {
 
 	} else {
 		foundLanguageInfo := false
-		_, languageInfo, foundLanguageInfo = LookupByExtension(suffix)
+		langName, languageInfo, foundLanguageInfo = LookupByExtension(suffix)
 		// If not supported return 0s, TODO should probably throw an error or report on it
 		// TODO Dockerfile does not always have an extension, but we will count it
 		if !foundLanguageInfo {
@@ -137,6 +140,7 @@ func ScanFile(filePath string) FileScanResults {
 	result.CodeLineCount = codeLineCount
 	result.BlankLineCount = blankLineCount
 	result.CommentsLineCount = commentsLineCount
+	result.LanguageName = langName
 	result.FilePath = filePath
 	return result
 
@@ -268,7 +272,6 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 		if !info.IsDir() {
 			suffix := ParseFileSuffix(info.Name())
 			var found bool
-			logger.Info(info.Name())
 			if suffix == "" {
 				_, _, found = LookupByFileName(filepath.Base(info.Name()))
 			} else {
