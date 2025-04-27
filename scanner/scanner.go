@@ -253,7 +253,7 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 	}
 
 	logger.Debug("Target directory is ", targetPath)
-	var fileNames []string
+	var filePaths []string
 	err = filepath.WalkDir(targetPath, func(path string, info os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -279,7 +279,7 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 			}
 
 			if found {
-				fileNames = append(fileNames, path)
+				filePaths = append(filePaths, path)
 			} else {
 				logger.Debug("Skipping file - ", path, " suffix - ", suffix, " - not supported")
 			}
@@ -297,5 +297,5 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 		logger.Debug("Error changing back to the original directory:", err)
 	}
 
-	return fileNames
+	return filePaths
 }

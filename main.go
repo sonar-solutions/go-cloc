@@ -6,23 +6,12 @@ import (
 	"go-cloc/report"
 	"go-cloc/scanner"
 	"go-cloc/utilities"
-	"os"
 	"path/filepath"
 )
 
 func main() {
 	// parse CLI arguments and store them in a struct
 	args := utilities.ParseArgsFromCLI()
-
-	// create output folder
-	if args.DumpCSVs {
-		// only create the folder if the folder does not exist
-		if _, err := os.Stat(args.ResultsDirectoryPath); err == nil {
-			logger.Debug("Folder ", args.ResultsDirectoryPath, " already exists")
-		} else if os.IsNotExist(err) {
-			os.Mkdir(args.ResultsDirectoryPath, 0777)
-		}
-	}
 
 	// scan LOC for the directory
 	logger.Info("Scanning ", args.LocalScanFilePath, "...")
@@ -42,15 +31,27 @@ func main() {
 	records := report.ConvertFileResultsIntoRecords(fileScanResultsArr, repoTotalResult)
 
 	// Dump results by file in a csv
-	if args.DumpCSVs {
-		outputCsvFilePath := filepath.Join(args.ResultsDirectoryPath, args.ScanId+".csv")
-		logger.Debug("Dumping results by file to ", outputCsvFilePath)
-		report.WriteCsv(outputCsvFilePath, records)
-		logger.Info("Done! Results for ", args.ScanId, " can be found ", outputCsvFilePath)
+	if args.CsvFilePath != "" {
+		logger.Debug("Dumping results by file to ", args.CsvFilePath)
+		report.WriteCsv(args.CsvFilePath, records)
+		logger.Info("Done! Results can be found ", args.CsvFilePath)
 	} else {
 		// print results to the command line
 		logger.Info("Results by file for ", args.LocalScanFilePath, ":")
 		report.PrintCsv(records)
+	}
+
+	if args.HtmlReportsDirectoryPath != "" {
+		logger.Info("Dumping HTML report to ", args.HtmlReportsDirectoryPath)
+		fileNames, fileContents := report.GenerateHTMLReports(fileScanResultsArr)
+
+		for index, _ := range fileNames {
+			fileName := fileNames[index]
+			fileContent := fileContents[index]
+			report.WriteStringToFile(filepath.Join(args.HtmlReportsDirectoryPath, fileName), fileContent)
+		}
+		report.DumpSVGs(args.HtmlReportsDirectoryPath)
+		logger.Info("Done! HTML report for ", args.LocalScanFilePath, " can be found in ", args.HtmlReportsDirectoryPath)
 	}
 
 	logger.Info("Total LOC for ", args.LocalScanFilePath, " is ", repoTotalResult.CodeLineCount)
