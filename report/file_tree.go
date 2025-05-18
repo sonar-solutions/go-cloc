@@ -11,10 +11,17 @@ import (
 )
 
 type FileTreeComponent struct {
-	parent        *FileTreeComponent
-	children      []*FileTreeComponent
-	name          string
-	CodeLineCount int
+	parent                  *FileTreeComponent
+	children                []*FileTreeComponent
+	name                    string
+	CodeLineCount           int
+	LanguageToCodeLineCount map[string]int // map of language to code line count, empty by default
+}
+
+// Pair is a simple string-int pair
+type Pair struct {
+	Key   string
+	Value int
 }
 
 func addChildIfNotExists(parent *FileTreeComponent, child *FileTreeComponent) *FileTreeComponent {
@@ -95,25 +102,62 @@ func createHTMLPage(component *FileTreeComponent) string {
 	htmlContent += "</tbody>"
 	htmlContent += "<tfoot><tr><th>Total Code Lines:</th><th class='code-line-count'>" + strconv.Itoa(component.CodeLineCount) + "</th></tfoot>"
 	htmlContent += "</table>"
+	// add language statistics
+	htmlContent += "<h2>Language Statistics</h2>"
+	htmlContent += "<table><thead><tr><th>Language</th><th>Code Line Count</th></tr><tr><thead></thead></tr></thead><tbody>"
+	// iterate a map
+	for _, pair := range sortKeysByValueInMap(component.LanguageToCodeLineCount) {
+		htmlContent += "<tr><td>" + pair.Key + "</td><td>" + strconv.Itoa(pair.Value) + "</td></tr>"
+	}
+	htmlContent += "</tbody>"
+	htmlContent += "<tfoot><tr><th>Total Code Lines:</th><th class='code-line-count'>" + strconv.Itoa(component.CodeLineCount) + "</th></tfoot>"
+	htmlContent += "</table>"
 	htmlContent += "</body></html>"
 	return htmlContent
 }
 
-// sets the code line count for every component in the tree
-func sumUpTotalLineOfCodeInTree(component *FileTreeComponent) int {
-	if component == nil {
-		return 0
+// combine two maps together into a single map and sum up their matching keys
+func combineMapsAndSum(a map[string]int, b map[string]int) map[string]int {
+	result := map[string]int{}
+	// just copy all keys from the first map to the result map
+	for key, value := range a {
+		result[key] = value
 	}
+	// then add all keys from the second map to the result map
+	for key, value := range b {
+		if _, ok := result[key]; !ok {
+			result[key] = value
+		} else {
+			result[key] += value
+		}
+	}
+	return result
+
+}
+
+// sets the code line count for every component in the tree
+func sumUpTotalLineOfCodeInTree(component *FileTreeComponent) (int, map[string]int) {
+	if component == nil {
+		return 0, map[string]int{}
+	}
+	// base case: if the component has no children, return its code line count
 	if len(component.children) == 0 {
-		return component.CodeLineCount
+		return component.CodeLineCount, component.LanguageToCodeLineCount
 	}
 
 	sum := 0
+	sumLanguageToCodeLineCount := map[string]int{}
 	for _, child := range component.children {
-		sum += sumUpTotalLineOfCodeInTree(child)
+		sumChildren, languageToCodeLineCount := sumUpTotalLineOfCodeInTree(child)
+		sum += sumChildren
+		sumLanguageToCodeLineCount = combineMapsAndSum(sumLanguageToCodeLineCount, languageToCodeLineCount)
+		logger.Debug("languageToCodeLineCount: ", languageToCodeLineCount)
 	}
+	logger.Debug("Len of children: ", len(component.children))
+	logger.Debug("sumLanguageToCodeLineCount: ", sumLanguageToCodeLineCount)
 	component.CodeLineCount = sum
-	return sum
+	component.LanguageToCodeLineCount = sumLanguageToCodeLineCount
+	return sum, sumLanguageToCodeLineCount
 }
 
 // helper function to sort a list of FileTreeComponents by their CodeLineCount
@@ -122,6 +166,20 @@ func sortComponentsByCodeLineCount(components []*FileTreeComponent) []*FileTreeC
 		return components[i].CodeLineCount > components[j].CodeLineCount
 	})
 	return components
+}
+
+// helper function to sum up total line of code in a FileTreeComponent and its children
+func sortKeysByValueInMap(m map[string]int) []Pair {
+	pairs := make([]Pair, 0, len(m))
+	for k, v := range m {
+		pairs = append(pairs, Pair{Key: k, Value: v})
+	}
+
+	sort.Slice(pairs, func(i, j int) bool {
+		return pairs[i].Value > pairs[j].Value
+	})
+
+	return pairs
 }
 
 // traverses the tree and every components' children by their CodeLineCount
@@ -138,9 +196,10 @@ func GenerateHTMLReports(fileScanResults []scanner.FileScanResults) ([]string, [
 	// create root node of the tree
 	root := &FileTreeComponent{
 		// TODO change me
-		name:     "index",
-		parent:   nil,
-		children: []*FileTreeComponent{},
+		name:                    "index",
+		parent:                  nil,
+		children:                []*FileTreeComponent{},
+		LanguageToCodeLineCount: map[string]int{},
 	}
 
 	// create tree structure based on the fileScanResults
@@ -149,12 +208,14 @@ func GenerateHTMLReports(fileScanResults []scanner.FileScanResults) ([]string, [
 		filePathComponents := ParseFileStructure(result.FilePath, string(filepath.Separator))
 		for _, component := range filePathComponents {
 			newChild := &FileTreeComponent{
-				name:     component,
-				children: []*FileTreeComponent{},
+				name:                    component,
+				children:                []*FileTreeComponent{},
+				LanguageToCodeLineCount: map[string]int{},
 			}
 			previousComponent = addChildIfNotExists(previousComponent, newChild)
 		}
 		previousComponent.CodeLineCount = result.CodeLineCount
+		previousComponent.LanguageToCodeLineCount[result.LanguageName] = result.CodeLineCount
 	}
 
 	// calculate total LOC in the tree
