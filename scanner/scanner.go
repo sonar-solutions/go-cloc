@@ -258,6 +258,13 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 		if err != nil {
 			return err
 		}
+		// Get the absolute path
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			logger.Error("Error getting absolute path:", err)
+			return err
+		}
+		// Check if the file matches any of the ignore patterns
 		for _, pattern := range patterns {
 			if pattern.Match([]byte(path)) {
 				if info.IsDir() {
@@ -279,7 +286,7 @@ func WalkDirectory(targetPath string, ignorePatterns []string) []string {
 			}
 
 			if found {
-				filePaths = append(filePaths, path)
+				filePaths = append(filePaths, absPath)
 			} else {
 				logger.Debug("Skipping file - ", path, " suffix - ", suffix, " - not supported")
 			}

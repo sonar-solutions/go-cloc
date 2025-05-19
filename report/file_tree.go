@@ -24,34 +24,34 @@ type Pair struct {
 	Value int
 }
 
-func addChildIfNotExists(parent *FileTreeComponent, child *FileTreeComponent) *FileTreeComponent {
-	// Check if child already exists under parent
-	for _, existingChild := range parent.children {
-		if existingChild.name == child.name {
-			logger.Debug("Child " + child.name + " already exists under parent " + parent.name)
-			return existingChild
-		}
-	}
-	// Add child if it doesn't exist under parent
+func addChild(parent *FileTreeComponent, child *FileTreeComponent) *FileTreeComponent {
 	parent.children = append(parent.children, child)
 	child.parent = parent
 	return child
 }
 
 // returns a full path in the tree from the root of the tree to the current component
-func getFullPathInTree(component *FileTreeComponent, osFileSeparator string) string {
+func getFullPathNameFromTree(component *FileTreeComponent, osFileSeparator string) string {
+	// root node
 	if component.parent == nil {
-		return component.name
+		return ""
 	}
-	return getFullPathInTree(component.parent, osFileSeparator) + osFileSeparator + component.name
+	return getFullPathNameFromTree(component.parent, osFileSeparator) + osFileSeparator + component.name
 }
 
 // creates a unique file name based on the components location in the tree
 func createUniqueFileNameFromComponentInTree(component *FileTreeComponent) string {
+	// root node
 	if component == nil {
 		return "index.html"
 	}
-	return getFullPathInTree(component, "-") + ".html"
+	// root node
+	if component.parent == nil {
+		return "index.html"
+	}
+
+	// all other nodes
+	return getFullPathNameFromTree(component, "-") + ".html"
 }
 
 // traverses the tree generating HTML reports for directories only
@@ -85,14 +85,18 @@ func createHTMLPage(component *FileTreeComponent) string {
 		return ""
 	}
 	// Create HTML content here based on component
-	htmlContent := "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><style>body{font-family:Arial,sans-serif}td{padding:8px;border-bottom:1px solid #ddd}th{background-color:#f2f2f2;padding:8px}a{color:#00f;text-decoration:none}a:hover{text-decoration:underline}.code-line-count{padding:8px;border-bottom:1px solid #ddd}.file,.folder{padding:10px;display:inline-block;width:20px;vertical-align:middle}</style><meta name='viewport' content='width=device-width,initial-scale=1'><title>File Tree Report</title></head><body><h1>File Tree Report</h1>"
-	htmlContent += "<p><b>Current Path:</b><a href='" + createUniqueFileNameFromComponentInTree(component.parent) + "'> '" + getFullPathInTree(component, string(filepath.Separator)) + "' </a><span style='color:gray;'>&lAarr; Click to return</span></p>"
-	htmlContent += "<table><thead><tr><th>File Name</th><th>Code Line Count</th></tr><tr><thead></thead></tr></thead><tbody>"
+	htmlContent := "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><style>body{font-family:Arial,sans-serif}.table-container{display:inline-block;margin-right:20px;vertical-align:top}td{padding:8px;border-bottom:1px solid #ddd}th{background-color:#f2f2f2;padding:8px}a{color:#00f;text-decoration:none}a:hover{text-decoration:underline}.code-line-count{padding:8px;border-bottom:1px solid #ddd;text-align:right}.file,.folder{padding:10px;display:inline-block;width:20px;vertical-align:middle}</style><meta name='viewport' content='width=device-width,initial-scale=1'><title>File Tree Report</title></head><body><h1>File Tree Report</h1>"
+	htmlContent += "<p><b>Current Path:</b><a href='" + createUniqueFileNameFromComponentInTree(component.parent) + "'> '" + getFullPathNameFromTree(component, string(filepath.Separator)) + "' </a><span style='color:gray;'>&lAarr; Click to return</span></p>"
+	htmlContent += "<p><b>Total Lines of Code: " + strconv.Itoa(component.CodeLineCount) + "</b></p>"
+
+	// add file statistics
+	htmlContent += "<div class='table-container'><h2>By File</h2>"
+	htmlContent += "<table id='file-statistics'><thead><tr><th>File Name</th><th>Code Line Count</th></tr><tr><thead></thead></tr></thead><tbody>"
 	for _, child := range component.children {
 		htmlContent += "<tr><td>"
 		// file
 		if len(child.children) == 0 {
-			htmlContent += "<img src='file-text.svg' alt='' class='file'> <span>" + child.name + "</span>"
+			htmlContent += "<img src='file-text.svg' alt='' class='file'> <span>" + "<a href='" + getFullPathNameFromTree(child, string(filepath.Separator)) + "'>" + child.name + "</a>" + "</span>"
 		} else {
 			htmlContent += "<img src='folder.svg' alt='' class='folder'> <a href='./" + createUniqueFileNameFromComponentInTree(child) + "'>" + child.name + "</a>"
 		}
@@ -100,19 +104,20 @@ func createHTMLPage(component *FileTreeComponent) string {
 
 	}
 	htmlContent += "</tbody>"
-	htmlContent += "<tfoot><tr><th>Total Code Lines:</th><th class='code-line-count'>" + strconv.Itoa(component.CodeLineCount) + "</th></tfoot>"
-	htmlContent += "</table>"
+	htmlContent += "<tfoot><tr><th></th><th class='code-line-count'>" + strconv.Itoa(component.CodeLineCount) + "</th></tfoot>"
+	htmlContent += "</table></div>"
+	htmlContent += "</body></html>"
+
 	// add language statistics
-	htmlContent += "<h2>Language Statistics</h2>"
-	htmlContent += "<table><thead><tr><th>Language</th><th>Code Line Count</th></tr><tr><thead></thead></tr></thead><tbody>"
+	htmlContent += "<div class='table-container'><h2>By Language</h2>"
+	htmlContent += "<table id='language-statistics'><thead><tr><th>Language</th><th>Code Line Count</th></tr><tr><thead></thead></tr></thead><tbody>"
 	// iterate a map
 	for _, pair := range sortKeysByValueInMap(component.LanguageToCodeLineCount) {
-		htmlContent += "<tr><td>" + pair.Key + "</td><td>" + strconv.Itoa(pair.Value) + "</td></tr>"
+		htmlContent += "<tr><td>" + pair.Key + "</td><td class='code-line-count'>" + strconv.Itoa(pair.Value) + "</td></tr>"
 	}
 	htmlContent += "</tbody>"
-	htmlContent += "<tfoot><tr><th>Total Code Lines:</th><th class='code-line-count'>" + strconv.Itoa(component.CodeLineCount) + "</th></tfoot>"
-	htmlContent += "</table>"
-	htmlContent += "</body></html>"
+	htmlContent += "<tfoot><tr><th></th><th class='code-line-count'>" + strconv.Itoa(component.CodeLineCount) + "</th></tfoot>"
+	htmlContent += "</table></div>"
 	return htmlContent
 }
 
@@ -190,15 +195,51 @@ func sortTreeByCodeLineCount(component *FileTreeComponent) {
 	}
 }
 
-// Creates HTML reports to visualize the LoC in the same file structure as was scanned. Helpful for identifying large directories.
-func GenerateHTMLReports(fileScanResults []scanner.FileScanResults) ([]string, []string) {
+func createTabs(tabIndex int) string {
+	if tabIndex == 0 {
+		return ""
+	}
+	tab := ""
+	for i := 0; i <= tabIndex; i++ {
+		tab += "  "
+	}
+	return tab
+}
+func debugTree(component *FileTreeComponent, tabIndex int) string {
+	if component == nil {
+		return ""
+	}
+	ret := ""
+	ret += createTabs(tabIndex) + "Name:" + component.name + "\n"
+	ret += createTabs(tabIndex) + "Path:" + getFullPathNameFromTree(component, "/") + "\n"
+	ret += createTabs(tabIndex) + "CodeLineCount:" + strconv.Itoa(component.CodeLineCount) + "\n"
+	ret += createTabs(tabIndex) + "Children:" + strconv.Itoa(len(component.children)) + "\n"
+	for _, child := range component.children {
+		ret += debugTree(child, tabIndex+1)
+	}
+	return ret
+}
+
+func findChild(parent *FileTreeComponent, childName string) *FileTreeComponent {
+	if parent == nil {
+		return nil
+	}
+	for _, child := range parent.children {
+		if child.name == childName {
+			return child
+		}
+	}
+	return nil
+}
+
+func createTreeFromScanResults(fileScanResults []scanner.FileScanResults) *FileTreeComponent {
 
 	// create root node of the tree
 	root := &FileTreeComponent{
-		// TODO change me
-		name:                    "index",
+		name:                    "",
 		parent:                  nil,
 		children:                []*FileTreeComponent{},
+		CodeLineCount:           0,
 		LanguageToCodeLineCount: map[string]int{},
 	}
 
@@ -206,17 +247,38 @@ func GenerateHTMLReports(fileScanResults []scanner.FileScanResults) ([]string, [
 	for _, result := range fileScanResults {
 		previousComponent := root
 		filePathComponents := ParseFileStructure(result.FilePath, string(filepath.Separator))
-		for _, component := range filePathComponents {
-			newChild := &FileTreeComponent{
-				name:                    component,
-				children:                []*FileTreeComponent{},
-				LanguageToCodeLineCount: map[string]int{},
+		filePathComponentsLastIndex := len(filePathComponents) - 1
+		for j, component := range filePathComponents {
+			// only create a component if it doesn't already exist in the tree
+			foundChild := findChild(previousComponent, component)
+			if foundChild != nil {
+				previousComponent = foundChild
+			} else {
+				newChild := &FileTreeComponent{
+					name:                    component,
+					children:                []*FileTreeComponent{},
+					CodeLineCount:           0,
+					LanguageToCodeLineCount: map[string]int{},
+				}
+				logger.Debug("newChild: ", component)
+				// leaf node
+				if j == filePathComponentsLastIndex {
+					newChild.CodeLineCount = result.CodeLineCount
+					newChild.LanguageToCodeLineCount[result.LanguageName] = result.CodeLineCount
+				}
+				addChild(previousComponent, newChild)
+				previousComponent = newChild
 			}
-			previousComponent = addChildIfNotExists(previousComponent, newChild)
 		}
-		previousComponent.CodeLineCount = result.CodeLineCount
-		previousComponent.LanguageToCodeLineCount[result.LanguageName] = result.CodeLineCount
 	}
+
+	return root
+}
+
+// Creates HTML reports to visualize the LoC in the same file structure as was scanned. Helpful for identifying large directories.
+func GenerateHTMLReports(fileScanResults []scanner.FileScanResults) ([]string, []string) {
+
+	root := createTreeFromScanResults(fileScanResults)
 
 	// calculate total LOC in the tree
 	sumUpTotalLineOfCodeInTree(root)
