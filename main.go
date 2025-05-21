@@ -30,15 +30,18 @@ func main() {
 	// convert results into records for CSV or command line output
 	records := report.ConvertFileResultsIntoRecords(fileScanResultsArr, repoTotalResult)
 
+	// print results to the command line
+	if args.OutputToCLI {
+		// print results to the command line
+		logger.Info("Results by file for ", args.LocalScanFilePath, ":")
+		report.PrintCsv(records)
+	}
+
 	// Dump results by file in a csv
 	if args.CsvFilePath != "" {
 		logger.Debug("Dumping results by file to ", args.CsvFilePath)
 		report.WriteCsv(args.CsvFilePath, records)
 		logger.Info("Done! Results can be found ", args.CsvFilePath)
-	} else {
-		// print results to the command line
-		logger.Info("Results by file for ", args.LocalScanFilePath, ":")
-		report.PrintCsv(records)
 	}
 
 	if args.HtmlReportsDirectoryPath != "" {
