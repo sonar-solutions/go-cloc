@@ -7,7 +7,48 @@ import (
 	"go-cloc/scanner"
 	"go-cloc/utilities"
 	"path/filepath"
+	"sync"
 )
+
+func ParallelScan(filePaths []string, concurrency int) []scanner.FileScanResults {
+	results := make([]scanner.FileScanResults, 0, len(filePaths))
+	jobs := make(chan string)
+	output := make(chan scanner.FileScanResults)
+
+	var wg sync.WaitGroup
+
+	// Start worker pool
+	for i := 0; i < concurrency; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for path := range jobs {
+				res := scanner.ScanFile(path)
+				output <- res
+			}
+		}()
+	}
+
+	// Send file paths into job channel
+	go func() {
+		for _, path := range filePaths {
+			jobs <- path
+		}
+		close(jobs)
+	}()
+
+	// Collect results
+	go func() {
+		wg.Wait()
+		close(output)
+	}()
+
+	for r := range output {
+		results = append(results, r)
+	}
+
+	return results
+}
 
 func main() {
 	// parse CLI arguments and store them in a struct
@@ -20,6 +61,7 @@ func main() {
 	for _, filePath := range filePaths {
 		fileScanResultsArr = append(fileScanResultsArr, scanner.ScanFile(filePath))
 	}
+	// fileScanResultsArr := ParallelScan(filePaths, 8)
 
 	logger.Debug("Calculating total LOC ...")
 
