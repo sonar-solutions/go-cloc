@@ -12,7 +12,7 @@ To get started with **go-cloc**, you can either download the binary manually or 
 
 ### Option 1: Manual Download
 
-1. Visit the [Releases page](https://github.com/cole-gannaway/go-cloc/releases).
+1. Visit the [Releases page](https://github.com/sonar-solutions/go-cloc/releases).
 2. Download the appropriate binary for your operating system and architecture.
 3. Extract the ZIP file and run the binary using your terminal (Linux/macOS) or PowerShell (Windows).
 
@@ -40,7 +40,7 @@ go-cloc -h
 You can install `go-cloc` using the official install script:
 
 ```sh
-curl -fsSL https://github.com/cole-gannaway/go-cloc/releases/latest/download/install.sh | bash
+curl -fsSL https://github.com/sonar-solutions/go-cloc/releases/latest/download/install.sh | bash
 ```
 
 This script detects your OS and CPU architecture, downloads the correct binary, and extracts it in your current directory. You can then move it to `/usr/local/bin` or another location in your `PATH`.

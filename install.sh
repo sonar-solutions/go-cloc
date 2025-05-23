@@ -1,7 +1,7 @@
 # !bin/bash
 
 # GitHub latest-download URL (no trailing slash)
-REPO_URL="https://github.com/cole-gannaway/go-cloc/releases/latest/download"
+REPO_URL="https://github.com/sonar-solutions/go-cloc/releases/latest/download"
 
 # Detect OS and arch
 OS="$(uname -s)"
