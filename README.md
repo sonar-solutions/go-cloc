@@ -40,7 +40,7 @@ go-cloc -h
 You can install `go-cloc` using the official install script:
 
 ```sh
-curl -fsSL https://github.com/cole-gannaway/go-cloc/releases/latest/download/install.sh | sudo bash
+curl -fsSL https://github.com/cole-gannaway/go-cloc/releases/latest/download/install.sh | bash
 ```
 
 This script detects your OS and CPU architecture, downloads the correct binary, and extracts it in your current directory. You can then move it to `/usr/local/bin` or another location in your `PATH`.
