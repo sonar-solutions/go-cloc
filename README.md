@@ -6,29 +6,53 @@ This tool quickly calculates an accurate Lines of Code (LOC) count for a file or
 
 It is **significantly more performant** than the [cloc](https://github.com/AlDanial/cloc) tool. See [performance benchmark](#performance-benchmarks) for comparisons.
 
+## Installation
 
-## Requirements
-1. Please download the appropriate [artifact](https://github.com/cole-gannaway/go-cloc/releases) for your platform and simply run the single exectuable in PowerShell or a terminal. Either add the binary to your PATH or explicitly specify the path to the binary, like so:
+To get started with **go-cloc**, you can either download the binary manually or use the provided install script.
+
+### Option 1: Manual Download
+
+1. Visit the [Releases page](https://github.com/cole-gannaway/go-cloc/releases).
+2. Download the appropriate binary for your operating system and architecture.
+3. Extract the ZIP file and run the binary using your terminal (Linux/macOS) or PowerShell (Windows).
+
 ```sh
-# Linux
-/home/user/downloads/go-cloc
-# Windows
-C:\Users\MyUser\Downloads\go-cloc.exe
+# Linux/macOS
+/home/user/Downloads/go-cloc
 
-# If added to PATH, you can run the binary directly without specifying the absolute path to the binary.
+# Windows (PowerShell)
+C:\Users\MyUser\Downloads\go-cloc.exe
+```
+
+To make `go-cloc` available globally, either:
+
+* Move it to a directory in your `PATH`, or
+* Run it by specifying the full path.
+
+Once it's on your `PATH`, you can run it like this:
+
+```sh
 go-cloc -h
 ```
 
+### Option 2: Install Script (Recommended for Linux/macOS)
+
+You can install `go-cloc` using the official install script:
+
+```sh
+curl -fsSL https://github.com/cole-gannaway/go-cloc/releases/latest/download/install.sh | sudo bash
+```
+
+This script detects your OS and CPU architecture, downloads the correct binary, and extracts it in your current directory. You can then move it to `/usr/local/bin` or another location in your `PATH`.
+
+## Usage
 Simply run the below command to calculate the Lines of Code (LOC) for the file or directory.
 ```sh
-# Single file
+# Scan a single file
 go-cloc test.js
-# Directory or Folder
-go-cloc src/main 
-# Output results to a CSV file
-go-cloc folder --csv results.csv
-# Output results as HTML files
-go-cloc folder --html html-folder
+
+# Scan all files in a directory and give statistics in both HTML and CSV formats
+go-cloc folder --html html-reports-folder --csv results.csv
 ```
 
 This will output the total Lines of Code (LOC) count for the entire code base. See example below.
@@ -46,16 +70,9 @@ This will output the total Lines of Code (LOC) count for the entire code base. S
 2024/09/29 17:37:05 [INFO] Total LOC for  src/main  is  1450
 1450
 ```
-### Recommended Usage
+
 
 To most accurately undertand the LOC, it is recommended to use both the `--html` and `--csv` options together. The HTML report will make it easy to navigate through your file structure to understand how the folders and files contribute to the total LOC. You can also use the CSV reports to quickly exclude files that are not relevant to your project using a program like Excel or similar tools. For more information on how to use these options, see [HTML Reports](#html-reports) and [CSV Reports](#csv-reports).
-
-```sh
-# Output results into a CSV file and HTML files
-go-cloc folder --csv results.csv --html html-folder
-# or for perforance, only output the total LOC
-go-cloc folder --output-to-cli=false
-```
 
 ### HTML Reports
 
