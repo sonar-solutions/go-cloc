@@ -38,7 +38,7 @@ DOWNLOAD_URL="${REPO_URL}/${ZIP_FILE}"
 echo "Downloading ${ZIP_FILE} from ${DOWNLOAD_URL}…"
 curl -fsSL -L -o "$ZIP_FILE" "$DOWNLOAD_URL"
 
-echo "Unpacking $ZIP_FILE…"
+echo "Unpacking ${ZIP_FILE}…"
 unzip -q "$ZIP_FILE"
 
 # Determine binary name and verify
