@@ -1,5 +1,9 @@
 # Go-Cloc
 
+## Tutorial
+
+[![YouTube Video](https://img.youtube.com/vi/Yu2WXEgtMCc/0.jpg)](https://youtu.be/Yu2WXEgtMCc)
+
 ## Overview
 
 This tool quickly calculates an accurate Lines of Code (LOC) count for a file or directory with a single executable. 
