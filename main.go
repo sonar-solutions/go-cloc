@@ -30,13 +30,6 @@ func main() {
 	// convert results into records for CSV or command line output
 	records := report.ConvertFileResultsIntoRecords(fileScanResultsArr, repoTotalResult)
 
-	// print results to the command line
-	if args.OutputToCLI {
-		// print results to the command line
-		logger.Info("Results by file for ", args.LocalScanFilePath, ":")
-		report.PrintCsv(records)
-	}
-
 	// Dump results by file in a csv
 	if args.CsvFilePath != "" {
 		logger.Debug("Dumping results by file to ", args.CsvFilePath)
@@ -57,6 +50,8 @@ func main() {
 		logger.Info("Done! HTML report for ", args.LocalScanFilePath, " can be found in ", args.HtmlReportsDirectoryPath)
 	}
 
+	report.PrintResultsToCommandLine(repoTotalResult.CodeLineCount, repoTotalResult.CommentsLineCount, repoTotalResult.BlankLineCount)
+	logger.Info("For detailed reporting, please use the --csv or --html options. For more information, please refer to the README.md file. ")
 	logger.Info("Total LOC for ", args.LocalScanFilePath, " is ", repoTotalResult.CodeLineCount)
 
 	// Print the total LOC to standard output to make it easy for external tools to parse

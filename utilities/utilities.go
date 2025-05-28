@@ -25,7 +25,6 @@ type CLIArgs struct {
 	CsvFilePath                     string
 	HtmlReportsDirectoryPath        string
 	OverrideLanguagesConfigFilePath string
-	OutputToCLI                     bool
 }
 
 func CleanLocalFilePath(targetPath string) string {
@@ -47,7 +46,6 @@ func ParseArgsFromCLI() CLIArgs {
 	csvFilePathArg := flag.String("csv", "", "Path to dump results to a csv file, otherwise results are printed to standard out")
 	htmlReportsDirectoryPathArg := flag.String("html", "", "Path to dump HTML reports into a specified directory, otherwise HTML reports are not generated. Note this directory must already exist.")
 	overrideLanguageConfigFilePathArg := flag.String("override-languages", "", "Path to languages configuration to override the default configuration.")
-	outputToCLIARG := flag.Bool("output-to-cli", true, "Print results by file to the command line. Set to false for optimum performance for large scans.")
 
 	// parse the CLI arguments
 	flag.Parse()
@@ -79,7 +77,6 @@ func ParseArgsFromCLI() CLIArgs {
 	csvFilePath := *csvFilePathArg
 	htmlReportsDirectoryPath := *htmlReportsDirectoryPathArg
 	overrideLanguageConfigFilePath := *overrideLanguageConfigFilePathArg
-	outputToCLI := *outputToCLIARG
 
 	// Check if the directory exists
 	if htmlReportsDirectoryPath != "" {
@@ -103,7 +100,6 @@ func ParseArgsFromCLI() CLIArgs {
 	logger.Debug("html-reports-directory-path: ", htmlReportsDirectoryPath)
 	logger.Debug("ignore-file-path: ", ignoreFilePath)
 	logger.Debug("override-language-config-file-path: ", overrideLanguageConfigFilePath)
-	logger.Debug("output-to-cli: ", outputToCLI)
 
 	// Set file path to scan
 	localScanFilePath := CleanLocalFilePath(cliArgs[0])
@@ -132,7 +128,6 @@ func ParseArgsFromCLI() CLIArgs {
 		CsvFilePath:                     csvFilePath,
 		HtmlReportsDirectoryPath:        htmlReportsDirectoryPath,
 		OverrideLanguagesConfigFilePath: overrideLanguageConfigFilePath,
-		OutputToCLI:                     outputToCLI,
 	}
 
 	return args

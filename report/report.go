@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type RepoTotal struct {
@@ -98,4 +99,33 @@ func PrintCsv(records [][]string) {
 		}
 		logger.Info(outputString)
 	}
+}
+
+func PrintResultsToCommandLine(codeLineCount int, commentsLineCount int, blankLineCount int) {
+	column1Arr := formatStringsForColumn([]string{"Code", strconv.Itoa(codeLineCount)})
+	column2Arr := formatStringsForColumn([]string{"Blank lines", strconv.Itoa(blankLineCount)})
+	column3Arr := formatStringsForColumn([]string{"Comments", strconv.Itoa(commentsLineCount)})
+	column4Arr := formatStringsForColumn([]string{"Total", strconv.Itoa(codeLineCount + blankLineCount + commentsLineCount)})
+
+	for i := range 2 {
+		logger.Info(column1Arr[i], "\t", column2Arr[i], "\t", column3Arr[i], "\t", column4Arr[i])
+	}
+}
+
+// Helper function to create strings for each column using even spaces between columns
+func formatStringsForColumn(columnEntriesRaw []string) []string {
+	// find maximum length of the entries in the column
+	maxLength := 0
+	for _, entry := range columnEntriesRaw {
+		if len(entry) > maxLength {
+			maxLength = len(entry)
+		}
+	}
+	// create strings for each column using even spaces between columns
+	columnEntriesFormatted := make([]string, len(columnEntriesRaw))
+	for i, entry := range columnEntriesRaw {
+		padding := maxLength - len(entry)
+		columnEntriesFormatted[i] = entry + strings.Repeat(" ", padding)
+	}
+	return columnEntriesFormatted
 }
