@@ -101,15 +101,27 @@ func PrintCsv(records [][]string) {
 	}
 }
 
+// PrintResultsToCommandLine prints the results of the scan to the command line in a table format using even spaces between columns
 func PrintResultsToCommandLine(codeLineCount int, commentsLineCount int, blankLineCount int) {
 	column1Arr := formatStringsForColumn([]string{"Code", strconv.Itoa(codeLineCount)})
 	column2Arr := formatStringsForColumn([]string{"Blank lines", strconv.Itoa(blankLineCount)})
 	column3Arr := formatStringsForColumn([]string{"Comments", strconv.Itoa(commentsLineCount)})
 	column4Arr := formatStringsForColumn([]string{"Total", strconv.Itoa(codeLineCount + blankLineCount + commentsLineCount)})
 
+	lineLength := 0
+	records := []string{}
 	for i := range 2 {
-		logger.Info(column1Arr[i], "\t", column2Arr[i], "\t", column3Arr[i], "\t", column4Arr[i])
+		line := column1Arr[i] + strings.Repeat(" ", 3) + column2Arr[i] + strings.Repeat(" ", 3) + column3Arr[i] + strings.Repeat(" ", 3) + column4Arr[i]
+		records = append(records, line)
+		lineLength = len(line)
 	}
+	border := strings.Repeat("-", lineLength)
+	logger.Info(border)
+	for _, record := range records {
+		logger.Info(record)
+	}
+	logger.Info(border)
+
 }
 
 // Helper function to create strings for each column using even spaces between columns

@@ -51,7 +51,12 @@ func main() {
 	}
 
 	report.PrintResultsToCommandLine(repoTotalResult.CodeLineCount, repoTotalResult.CommentsLineCount, repoTotalResult.BlankLineCount)
-	logger.Info("For detailed reporting, please use the --csv or --html options. For more information, please refer to the README.md file. ")
+	logger.Info("")
+	logger.Info("VERIFY THIS DOESN'T INCLUDE 3RD PARTY DEPENDENCIES, TEST CODE, AND OTHER NON-SOURCE CODE FILES FROM THIS ANALYSIS.")
+	logger.Info("")
+	logger.Info("https://docs.sonarsource.com/sonarqube-server/latest/server-upgrade-and-maintenance/monitoring/lines-of-code/ - LOC definitions.")
+	logger.Info("")
+	logger.Info("For detailed reporting, please use the --csv or --html options. ")
 	logger.Info("Total LOC for ", args.LocalScanFilePath, " is ", repoTotalResult.CodeLineCount)
 
 	// Print the total LOC to standard output to make it easy for external tools to parse
